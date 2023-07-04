@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useStoreModal } from "@/hooks/useStoreModal";
+import { createStore } from "@/services/storeService";
+import { StoreFormSchema } from "@/types/store";
 
-const formSchema = z.object({
+const formSchema: z.ZodType<StoreFormSchema> = z.object({
   name: z.string().min(1),
 });
 
@@ -36,8 +39,15 @@ export const StoreModal = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    //TODO: Create Store
+    try {
+      setLoading(true);
+      const response = await createStore(values);
+      window.location.assign(`/${response.id}`);
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,7 +69,7 @@ export const StoreModal = () => {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input disabled={loading} placeholder="E-Commerce" {...field} />
+                        <Input disabled={loading} placeholder="Store name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
